@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>digital garden — Lindsey Noelle LePlae</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body.garden {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    body.garden header {
+      display: flex;
+      align-items: baseline;
+      gap: 18px;
+      flex-wrap: wrap;
+      padding: 22px 36px 12px;
+    }
+
+    .garden-title { color: var(--ink); font-size: 17px; }
+    .garden-stats { color: var(--rose); font-style: italic; font-size: 15px; }
+
+    .garden-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 0 36px 12px;
+    }
+
+    .garden-controls input[type="search"] {
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(69, 40, 92, 0.25);
+      border-radius: 3px;
+      padding: 4px 10px;
+      width: 190px;
+      outline: none;
+    }
+    .garden-controls input[type="search"]:focus { border-color: var(--accent); }
+
+    .chip {
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--ink);
+      background: none;
+      border: 1px solid rgba(69, 40, 92, 0.2);
+      border-radius: 999px;
+      padding: 3px 12px 3px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      opacity: 0.9;
+    }
+    .chip .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .chip.off { opacity: 0.35; }
+    .chip:hover { border-color: var(--accent); }
+
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 30;
+      background: #fffbfd;
+      border: 1px solid rgba(69, 40, 92, 0.25);
+      border-radius: 3px;
+      min-width: 230px;
+      max-height: 260px;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 8px 24px rgba(69, 40, 92, 0.12);
+    }
+    .search-results button {
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--ink);
+      text-align: left;
+      background: none;
+      border: none;
+      padding: 7px 12px;
+      cursor: pointer;
+    }
+    .search-results button:hover { background: rgba(31, 163, 61, 0.1); color: var(--accent); }
+    .search-results .kind { color: var(--rose); font-size: 13px; font-style: italic; margin-left: 6px; }
+    .search-wrap { position: relative; }
+
+    .stage { position: relative; flex: 1; min-height: 0; }
+    canvas#sky { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; }
+    canvas#sky.dragging { cursor: grabbing; }
+    canvas#sky.pointing { cursor: pointer; }
+
+    .hint {
+      position: absolute;
+      left: 36px;
+      bottom: 18px;
+      font-style: italic;
+      color: var(--rose);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .zoom-controls {
+      position: absolute;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 15;
+      transition: right 0.25s ease;
+    }
+    .stage:has(.panel.open) .zoom-controls { right: 386px; }
+    .zoom-controls button {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 20px;
+      line-height: 1;
+      color: var(--ink);
+      background: #fffbfd;
+      border: 1px solid rgba(69, 40, 92, 0.25);
+      border-radius: 3px;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .zoom-controls button:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ---- node panel ---- */
+    .panel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      bottom: 14px;
+      width: 340px;
+      max-width: calc(100vw - 28px);
+      background: #fffbfd;
+      border: 1px solid rgba(69, 40, 92, 0.22);
+      border-radius: 4px;
+      box-shadow: 0 10px 32px rgba(69, 40, 92, 0.14);
+      padding: 22px 24px;
+      overflow-y: auto;
+      display: none;
+      z-index: 20;
+    }
+    .panel.open { display: block; }
+
+    .panel .close {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-family: inherit;
+      font-size: 16px;
+      color: var(--ink-soft);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+    .panel .close:hover { color: var(--accent); }
+
+    .panel h2 { font-size: 19px; font-weight: normal; color: var(--ink); margin: 0 36px 2px 0; }
+    .panel .kind-line { font-size: 14px; font-style: italic; color: var(--rose); margin-bottom: 14px; }
+    .panel .kind-line .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+    .panel .note { font-size: 15.5px; color: var(--ink-soft); line-height: 1.55; margin-bottom: 16px; }
+
+    .panel h3 {
+      font-size: 15px;
+      font-weight: normal;
+      font-style: italic;
+      color: var(--rose);
+      margin: 16px 0 8px;
+    }
+
+    .thread-list { list-style: none; margin: 0; padding: 0; }
+    .thread-list li { margin-bottom: 9px; font-size: 15px; line-height: 1.4; }
+    .thread-list a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(31, 163, 61, 0.35);
+      cursor: pointer;
+    }
+    .thread-list a:hover { border-bottom-color: var(--accent); }
+    .thread-list .why { color: var(--ink-soft); font-size: 14px; }
+    .thread-list .dir { color: var(--rose); font-size: 13px; }
+
+    .oq-list { list-style: none; margin: 0; padding: 0; }
+    .oq-list li { font-size: 14px; font-style: italic; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.45; }
+
+    @media (max-width: 720px) {
+      body.garden header, .garden-controls { padding-left: 16px; padding-right: 16px; }
+      .panel {
+        top: auto;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        width: auto;
+        max-height: 48%;
+      }
+      .hint { display: none; }
+      .stage:has(.panel.open) .zoom-controls { display: none; }
+    }
+  </style>
+</head>
+<body class="garden page">
+  <header>
+    <a href="index.html">Lindsey Noelle LePlae</a>
+    <span class="garden-title">digital garden</span>
+    <span class="garden-stats" id="stats"></span>
+  </header>
+
+  <div class="garden-controls">
+    <span class="search-wrap">
+      <input type="search" id="search" placeholder="find something…" autocomplete="off">
+      <div class="search-results" id="search-results"></div>
+    </span>
+    <span id="chips"></span>
+  </div>
+
+  <div class="stage">
+    <canvas id="sky"></canvas>
+    <p class="hint">click a dot · drag to wander · scroll to zoom</p>
+
+    <div class="zoom-controls">
+      <button type="button" id="zoom-in" aria-label="zoom in">+</button>
+      <button type="button" id="zoom-out" aria-label="zoom out">−</button>
+    </div>
+
+    <aside class="panel" id="panel" aria-live="polite">
+      <button type="button" class="close" id="panel-close" aria-label="close">×</button>
+      <h2 id="p-name"></h2>
+      <p class="kind-line" id="p-kind"></p>
+      <p class="note" id="p-note"></p>
+      <div id="p-threads"></div>
+      <div id="p-oq"></div>
+    </aside>
+  </div>
+
+  <script src="data/garden-data.js"></script>
+  <script>
+  (function () {
+    const DATA = window.GARDEN;
+    const nodes = DATA.nodes;
+
+    /* ---- grouping & palette ---- */
+    const GROUPS = [
+      { key: "places",      label: "places",       color: "#7c3aed", match: t => t === "place" },
+      { key: "film",        label: "film & tv",    color: "#f97316", match: t => t === "film" || t === "tv" },
+      { key: "art",         label: "art & design", color: "#ec5f8f", match: t => t === "art" || t === "design" },
+      { key: "music",       label: "music",        color: "#eaa620", match: t => t === "music" },
+      { key: "lit",         label: "literature",   color: "#2fb45a", match: t => t === "literature" },
+      { key: "people",      label: "people",       color: "#b47ae2", match: t => t === "person" },
+      { key: "life",        label: "themes & life",color: "#9d87b8", match: () => true }
+    ];
+    const groupOf = n => GROUPS.find(g => g.match(n.type));
+
+    /* ---- index, adjacency ---- */
+    const byId = {};
+    nodes.forEach(n => byId[n.id] = n);
+
+    const incoming = {};   // id -> [{from, why, strength}]
+    const edgeMap = {};    // "a|b" -> {a, b, strength}
+    let threadCount = 0;
+
+    nodes.forEach(n => (n.threads || []).forEach(t => {
+      if (!byId[t.to]) return;
+      threadCount++;
+      (incoming[t.to] = incoming[t.to] || []).push({ from: n.id, why: t.why, strength: t.strength });
+      const key = n.id < t.to ? n.id + "|" + t.to : t.to + "|" + n.id;
+      const s = t.strength === "strong" ? 2 : t.strength === "loose" ? 0.5 : 1;
+      if (!edgeMap[key] || edgeMap[key].s < s) edgeMap[key] = { a: n.id, b: t.to, s };
+    }));
+    const edges = Object.values(edgeMap);
+
+    const degree = {};
+    edges.forEach(e => {
+      degree[e.a] = (degree[e.a] || 0) + 1;
+      degree[e.b] = (degree[e.b] || 0) + 1;
+    });
+
+    document.getElementById("stats").textContent =
+      nodes.length + " things · " + threadCount + " threads · still growing";
+
+    /* ---- physics layout ---- */
+    const sim = nodes.map((n, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const r = 200 + Math.random() * 500;
+      return { id: n.id, x: Math.cos(angle) * r, y: Math.sin(angle) * r, vx: 0, vy: 0 };
+    });
+    const simById = {};
+    sim.forEach(s => simById[s.id] = s);
+
+    const springs = edges.map(e => ({ a: simById[e.a], b: simById[e.b], s: e.s }));
+
+    for (let iter = 0; iter < 380; iter++) {
+      for (let i = 0; i < sim.length; i++) {
+        const p = sim[i];
+        for (let j = i + 1; j < sim.length; j++) {
+          const q = sim[j];
+          let dx = p.x - q.x, dy = p.y - q.y;
+          let d2 = dx * dx + dy * dy;
+          if (d2 < 64) { dx = (Math.random() - 0.5) * 8; dy = (Math.random() - 0.5) * 8; d2 = 64; }
+          const f = 46000 / d2;
+          const d = Math.sqrt(d2);
+          const fx = (dx / d) * f, fy = (dy / d) * f;
+          p.vx += fx; p.vy += fy;
+          q.vx -= fx; q.vy -= fy;
+        }
+      }
+      springs.forEach(sp => {
+        const dx = sp.b.x - sp.a.x, dy = sp.b.y - sp.a.y;
+        const d = Math.sqrt(dx * dx + dy * dy) || 1;
+        const f = 0.02 * (d - 100) * (sp.s >= 2 ? 1.4 : sp.s <= 0.5 ? 0.7 : 1);
+        const fx = (dx / d) * f, fy = (dy / d) * f;
+        sp.a.vx += fx; sp.a.vy += fy;
+        sp.b.vx -= fx; sp.b.vy -= fy;
+      });
+      sim.forEach(p => {
+        p.vx -= p.x * 0.003;
+        p.vy -= p.y * 0.003;
+        p.vx *= 0.85; p.vy *= 0.85;
+        const sp = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        if (sp > 40) { p.vx *= 40 / sp; p.vy *= 40 / sp; }
+        p.x += p.vx; p.y += p.vy;
+      });
+    }
+
+    /* ---- render state ---- */
+    const canvas = document.getElementById("sky");
+    const ctx = canvas.getContext("2d");
+    let view = { x: 0, y: 0, k: 1 };
+    let selected = null;
+    let hovered = null;
+    let neighborSet = new Set();
+    const groupOn = {};
+    GROUPS.forEach(g => groupOn[g.key] = true);
+
+    const radiusOf = id => Math.min(16, 3.5 + Math.sqrt(degree[id] || 0) * 1.7);
+    const isWishlist = n => (n.subtype || "").includes("wishlist");
+    const visibleNode = n => groupOn[groupOf(n).key];
+
+    function fitView() {
+      let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+      sim.forEach(p => {
+        minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+        minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+      });
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      const k = Math.min(w / (maxX - minX + 160), h / (maxY - minY + 160));
+      view.k = k;
+      view.x = w / 2 - k * (minX + maxX) / 2;
+      view.y = h / 2 - k * (minY + maxY) / 2;
+    }
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.clientWidth * dpr;
+      canvas.height = canvas.clientHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    function draw() {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+      ctx.save();
+      ctx.translate(view.x, view.y);
+      ctx.scale(view.k, view.k);
+
+      const dimming = selected !== null;
+
+      edges.forEach(e => {
+        const na = byId[e.a], nb = byId[e.b];
+        if (!visibleNode(na) || !visibleNode(nb)) return;
+        const pa = simById[e.a], pb = simById[e.b];
+        let alpha = e.s >= 2 ? 0.32 : e.s <= 0.5 ? 0.1 : 0.17;
+        let width = e.s >= 2 ? 1.4 : 0.7;
+        if (dimming) {
+          const touches = e.a === selected || e.b === selected;
+          alpha = touches ? 0.55 : 0.04;
+          if (touches) width = 1.4;
+        }
+        ctx.strokeStyle = "rgba(69, 40, 92, " + alpha + ")";
+        ctx.lineWidth = width / view.k;
+        ctx.beginPath();
+        ctx.moveTo(pa.x, pa.y);
+        ctx.lineTo(pb.x, pb.y);
+        ctx.stroke();
+      });
+
+      nodes.forEach(n => {
+        if (!visibleNode(n)) return;
+        const p = simById[n.id];
+        const g = groupOf(n);
+        const r = radiusOf(n.id);
+        let alpha = 1;
+        if (dimming && n.id !== selected && !neighborSet.has(n.id)) alpha = 0.15;
+
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        if (isWishlist(n)) {
+          ctx.strokeStyle = g.color;
+          ctx.lineWidth = 1.6 / Math.max(view.k, 0.8);
+          ctx.fillStyle = "rgba(253, 244, 248, 0.9)";
+          ctx.fill();
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = g.color;
+          ctx.fill();
+        }
+        if (n.id === selected || n.id === hovered) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r + 3.5 / view.k, 0, Math.PI * 2);
+          ctx.strokeStyle = "#1fa33d";
+          ctx.lineWidth = 1.6 / view.k;
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      });
+
+      const labelFont = Math.max(11, 12.5 / view.k);
+      ctx.font = labelFont + "px 'Times New Roman', Times, serif";
+      ctx.textAlign = "center";
+      nodes.forEach(n => {
+        if (!visibleNode(n)) return;
+        const p = simById[n.id];
+        const deg = degree[n.id] || 0;
+        const big = view.k < 0.9 ? deg >= 14 : deg >= 9;
+        const focus = n.id === selected || n.id === hovered || (selected && neighborSet.has(n.id) && view.k > 0.9);
+        if (!big && !focus && view.k < 1.7) return;
+        let alpha = 0.85;
+        if (selected && n.id !== selected && !neighborSet.has(n.id)) alpha = 0.12;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = "#45285c";
+        ctx.fillText(n.name, p.x, p.y - radiusOf(n.id) - 5 / view.k);
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.restore();
+    }
+
+    /* ---- selection & panel ---- */
+    const panel = document.getElementById("panel");
+
+    function esc(s) {
+      return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function openPanel(id) {
+      const n = byId[id];
+      if (!n) return;
+      selected = id;
+      neighborSet = new Set();
+      (n.threads || []).forEach(t => neighborSet.add(t.to));
+      (incoming[id] || []).forEach(t => neighborSet.add(t.from));
+
+      document.getElementById("p-name").textContent = n.name;
+
+      const g = groupOf(n);
+      let kind = '<span class="swatch" style="background:' + g.color + '"></span>' + esc(g.label);
+      if (isWishlist(n)) kind += " · wish list";
+      const loc = n.location;
+      if (loc && (loc.city || loc.country)) {
+        const bits = [loc.city, loc.neighborhood, loc.region, loc.country].filter(Boolean);
+        kind += " · " + esc([...new Set(bits)].join(", "));
+      }
+      document.getElementById("p-kind").innerHTML = kind;
+      const noteEl = document.getElementById("p-note");
+      noteEl.textContent = n.rawNote || "";
+      noteEl.style.display = n.rawNote ? "" : "none";
+
+      let html = "";
+      const out = (n.threads || []).filter(t => byId[t.to]);
+      const inn = (incoming[id] || []);
+      if (out.length || inn.length) {
+        html += "<h3>threads</h3><ul class='thread-list'>";
+        out.forEach(t => {
+          html += "<li><a data-go='" + esc(t.to) + "'>" + esc(byId[t.to].name) + "</a>" +
+                  (t.why ? " <span class='why'>— " + esc(t.why) + "</span>" : "") + "</li>";
+        });
+        inn.forEach(t => {
+          html += "<li><span class='dir'>from</span> <a data-go='" + esc(t.from) + "'>" + esc(byId[t.from].name) + "</a>" +
+                  (t.why ? " <span class='why'>— " + esc(t.why) + "</span>" : "") + "</li>";
+        });
+        html += "</ul>";
+      }
+      document.getElementById("p-threads").innerHTML = html;
+
+      document.getElementById("p-oq").innerHTML = "";
+
+      panel.classList.add("open");
+      history.replaceState(null, "", "#" + id);
+      draw();
+    }
+
+    function centerOn(id) {
+      const p = simById[id];
+      if (!p) return;
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      view.k = Math.max(view.k, 1.1);
+      view.x = w / 2 - view.k * p.x;
+      view.y = h / 2 - view.k * p.y;
+    }
+
+    function closePanel() {
+      selected = null;
+      neighborSet = new Set();
+      panel.classList.remove("open");
+      history.replaceState(null, "", location.pathname);
+      draw();
+    }
+
+    panel.addEventListener("click", e => {
+      const go = e.target.getAttribute && e.target.getAttribute("data-go");
+      if (go) { openPanel(go); centerOn(go); draw(); }
+    });
+    document.getElementById("panel-close").addEventListener("click", closePanel);
+
+    /* ---- interaction ---- */
+    function screenToWorld(sx, sy) {
+      return { x: (sx - view.x) / view.k, y: (sy - view.y) / view.k };
+    }
+    function nodeAt(sx, sy) {
+      const w = screenToWorld(sx, sy);
+      let best = null, bestD = 1e9;
+      nodes.forEach(n => {
+        if (!visibleNode(n)) return;
+        const p = simById[n.id];
+        const dx = p.x - w.x, dy = p.y - w.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        const hit = radiusOf(n.id) + 6 / view.k;
+        if (d < hit && d < bestD) { best = n.id; bestD = d; }
+      });
+      return best;
+    }
+
+    let dragging = false, moved = false, lastX = 0, lastY = 0;
+
+    canvas.addEventListener("pointerdown", e => {
+      dragging = true; moved = false;
+      lastX = e.clientX; lastY = e.clientY;
+      canvas.classList.add("dragging");
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener("pointermove", e => {
+      const rect = canvas.getBoundingClientRect();
+      if (dragging) {
+        const dx = e.clientX - lastX, dy = e.clientY - lastY;
+        if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+        view.x += dx; view.y += dy;
+        lastX = e.clientX; lastY = e.clientY;
+        draw();
+      } else {
+        const h = nodeAt(e.clientX - rect.left, e.clientY - rect.top);
+        if (h !== hovered) {
+          hovered = h;
+          canvas.classList.toggle("pointing", !!h);
+          draw();
+        }
+      }
+    });
+    canvas.addEventListener("pointerup", e => {
+      dragging = false;
+      canvas.classList.remove("dragging");
+      if (!moved) {
+        const rect = canvas.getBoundingClientRect();
+        const id = nodeAt(e.clientX - rect.left, e.clientY - rect.top);
+        if (id) openPanel(id); else closePanel();
+      }
+    });
+    let zoomAnim = null;
+    function animateZoomTo(targetK) {
+      const startK = view.k;
+      const mx = canvas.clientWidth / 2, my = canvas.clientHeight / 2;
+      const wx = (mx - view.x) / view.k, wy = (my - view.y) / view.k;
+      const t0 = performance.now();
+      const dur = 280;
+      if (zoomAnim) cancelAnimationFrame(zoomAnim);
+      function step(t) {
+        const p = Math.min(1, (t - t0) / dur);
+        const e = 1 - Math.pow(1 - p, 3);
+        view.k = startK + (targetK - startK) * e;
+        view.x = mx - wx * view.k;
+        view.y = my - wy * view.k;
+        draw();
+        if (p < 1) zoomAnim = requestAnimationFrame(step);
+      }
+      zoomAnim = requestAnimationFrame(step);
+    }
+    document.getElementById("zoom-in").addEventListener("click", () =>
+      animateZoomTo(Math.min(6, view.k * 1.5)));
+    document.getElementById("zoom-out").addEventListener("click", () =>
+      animateZoomTo(Math.max(0.25, view.k / 1.5)));
+
+    canvas.addEventListener("wheel", e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      const factor = Math.exp(-e.deltaY * 0.0012);
+      const k2 = Math.min(6, Math.max(0.25, view.k * factor));
+      view.x = mx - (mx - view.x) * (k2 / view.k);
+      view.y = my - (my - view.y) * (k2 / view.k);
+      view.k = k2;
+      draw();
+    }, { passive: false });
+
+    /* ---- chips ---- */
+    const chipsEl = document.getElementById("chips");
+    GROUPS.forEach(g => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.innerHTML = '<span class="dot" style="background:' + g.color + '"></span>' + g.label;
+      b.addEventListener("click", () => {
+        groupOn[g.key] = !groupOn[g.key];
+        b.classList.toggle("off", !groupOn[g.key]);
+        draw();
+      });
+      chipsEl.appendChild(b);
+    });
+
+    /* ---- search ---- */
+    const searchEl = document.getElementById("search");
+    const resultsEl = document.getElementById("search-results");
+    searchEl.addEventListener("input", () => {
+      const q = searchEl.value.trim().toLowerCase();
+      resultsEl.innerHTML = "";
+      if (q.length < 2) { resultsEl.style.display = "none"; return; }
+      const hits = nodes.filter(n => n.name.toLowerCase().includes(q)).slice(0, 9);
+      if (!hits.length) { resultsEl.style.display = "none"; return; }
+      hits.forEach(n => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.innerHTML = esc(n.name) + '<span class="kind">' + esc(groupOf(n).label) + "</span>";
+        b.addEventListener("click", () => {
+          resultsEl.style.display = "none";
+          searchEl.value = "";
+          openPanel(n.id);
+          centerOn(n.id);
+          draw();
+        });
+        resultsEl.appendChild(b);
+      });
+      resultsEl.style.display = "flex";
+    });
+    document.addEventListener("click", e => {
+      if (!resultsEl.contains(e.target) && e.target !== searchEl) resultsEl.style.display = "none";
+    });
+
+    /* ---- boot ---- */
+    window.addEventListener("resize", resize);
+    resize();
+    fitView();
+    draw();
+
+    if (location.hash.length > 1) {
+      const id = decodeURIComponent(location.hash.slice(1));
+      if (byId[id]) { openPanel(id); centerOn(id); draw(); }
+    }
+  })();
+  </script>
+</body>
+</html>

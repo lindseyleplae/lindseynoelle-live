@@ -1,0 +1,204 @@
+/* palette — after "Thinking for a Living": blush paper, plum ink, burnt-orange accent */
+:root {
+  --paper: #fdf4f8;
+  --ink: #45285c;
+  --ink-soft: #6c5a7c;
+  --accent: #1fa33d;
+  --rose: #4258a8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Times New Roman", Times, serif;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+a { color: var(--ink); text-decoration: none; }
+
+/* ---- centered homepage ---- */
+body.home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  text-align: center;
+}
+
+.name {
+  font-size: 17px;
+  font-weight: normal;
+}
+
+nav.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+nav.menu a,
+nav.menu button {
+  font-family: inherit;
+  font-size: 17px;
+  color: var(--ink);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+nav.menu a:hover,
+nav.menu button:hover,
+nav.menu button[aria-expanded="true"] {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.dropdown {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.dropdown.open { display: flex; }
+
+nav.menu .dropdown a {
+  font-size: 16px;
+  color: var(--accent);
+}
+
+nav.menu .dropdown a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ---- interior pages ---- */
+body.page {
+  display: flex;
+  flex-direction: column;
+}
+
+body.page header { padding: 28px 36px; }
+
+body.page header a {
+  color: var(--ink);
+  font-size: 17px;
+}
+
+body.page header a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+body.page main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 36px 72px;
+}
+
+.profile,
+.content {
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.project-title {
+  font-size: 17px;
+  font-weight: normal;
+}
+
+.profile p,
+.content p { color: var(--ink-soft); }
+
+.profile a,
+.content a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.status {
+  font-style: italic;
+  color: var(--rose);
+  font-size: 16px;
+}
+
+/* ---- project dossier pages ---- */
+.dossier {
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.dossier .project-title { text-align: center; margin-bottom: 2px; }
+.dossier .tagline {
+  text-align: center;
+  font-style: italic;
+  color: var(--rose);
+  font-size: 15.5px;
+  margin-bottom: 20px;
+}
+
+.dossier h3 {
+  font-size: 15px;
+  font-weight: normal;
+  font-style: italic;
+  color: var(--rose);
+  margin: 18px 0 6px;
+}
+
+.dossier p {
+  color: var(--ink-soft);
+  font-size: 15.5px;
+  line-height: 1.65;
+  margin: 0 0 6px;
+}
+
+.dossier a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.dossier .shot {
+  margin: 14px 0 4px;
+}
+.dossier .shot img {
+  width: 100%;
+  display: block;
+  border: 1px solid rgba(69, 40, 92, 0.25);
+  border-radius: 4px;
+}
+.dossier .shot figcaption {
+  font-size: 13.5px;
+  font-style: italic;
+  color: var(--rose);
+  text-align: center;
+  margin-top: 6px;
+}
