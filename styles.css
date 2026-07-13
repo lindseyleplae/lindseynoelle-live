@@ -42,7 +42,7 @@ body.home {
 
 .name {
   font-family: 'Pinyon Script', cursive;
-  font-size: clamp(3.2rem, 8vw, 4.6rem);
+  font-size: clamp(2.7rem, 6.8vw, 3.9rem);
   font-weight: 400;
   color: var(--name);
   line-height: 1;
@@ -106,7 +106,7 @@ body.page header { padding: 28px 36px; }
 body.page header a {
   font-family: 'Pinyon Script', cursive;
   color: var(--name);
-  font-size: 27px;
+  font-size: 23px;
   font-weight: 400;
 }
 
