@@ -42,7 +42,7 @@ body.home {
 
 .name {
   font-family: 'Pinyon Script', cursive;
-  font-size: 26px;
+  font-size: 32px;
   font-weight: 400;
   color: var(--name);
   line-height: 1.1;
