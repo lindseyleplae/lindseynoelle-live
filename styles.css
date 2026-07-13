@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap');
 
 /* palette — after "Thinking for a Living": blush paper, plum ink, burnt-orange accent */
 :root {
@@ -41,7 +41,7 @@ body.home {
 }
 
 .name {
-  font-family: 'Great Vibes', cursive;
+  font-family: 'Pinyon Script', cursive;
   font-size: clamp(3.2rem, 8vw, 4.6rem);
   font-weight: 400;
   color: var(--name);
@@ -104,7 +104,7 @@ body.page {
 body.page header { padding: 28px 36px; }
 
 body.page header a {
-  font-family: 'Great Vibes', cursive;
+  font-family: 'Pinyon Script', cursive;
   color: var(--name);
   font-size: 27px;
   font-weight: 400;
