@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
 
 /* palette — after "Thinking for a Living": blush paper, plum ink, burnt-orange accent */
 :root {
@@ -41,9 +41,9 @@ body.home {
 }
 
 .name {
-  font-family: 'Dancing Script', cursive;
-  font-size: clamp(2.8rem, 7vw, 4rem);
-  font-weight: 700;
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(3.2rem, 8vw, 4.6rem);
+  font-weight: 400;
   color: var(--name);
   line-height: 1;
 }
@@ -104,10 +104,10 @@ body.page {
 body.page header { padding: 28px 36px; }
 
 body.page header a {
-  font-family: 'Dancing Script', cursive;
+  font-family: 'Great Vibes', cursive;
   color: var(--name);
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 27px;
+  font-weight: 400;
 }
 
 body.page header a:hover {
