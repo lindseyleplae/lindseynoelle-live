@@ -2,7 +2,7 @@
 
 /* palette — after "Thinking for a Living": blush paper, plum ink, burnt-orange accent */
 :root {
-  --paper: #fff0f5;
+  --paper: #fbeef0;
   --ink: #45285c;
   --ink-soft: #6c5a7c;
   --accent: #1fa33d;
@@ -42,7 +42,7 @@ body.home {
 
 .name {
   font-family: 'Pinyon Script', cursive;
-  font-size: 32px;
+  font-size: 40px;
   font-weight: 400;
   color: var(--name);
   line-height: 1.1;
