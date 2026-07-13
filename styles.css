@@ -36,7 +36,7 @@ body.home {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
+  gap: 16px;
   text-align: center;
 }
 
@@ -52,7 +52,7 @@ nav.menu {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 nav.menu a,
@@ -101,19 +101,42 @@ body.page {
   flex-direction: column;
 }
 
-body.page header { padding: 28px 36px; }
+body.page header {
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
 
-body.page header a {
+.site-name {
   font-family: 'Pinyon Script', cursive;
   color: var(--name);
   font-size: 23px;
   font-weight: 400;
 }
 
-body.page header a:hover {
-  color: var(--name);
-  text-decoration: underline;
-  text-underline-offset: 4px;
+.site-name:hover { text-decoration: none; }
+
+nav.page-menu {
+  align-items: flex-start;
+  text-align: left;
+  gap: 8px;
+}
+
+nav.page-menu a,
+nav.page-menu button {
+  font-size: 15px;
+}
+
+nav.page-menu .dropdown {
+  align-items: flex-start;
+  margin: 2px 0 2px 14px;
+  gap: 7px;
+}
+
+nav.page-menu .dropdown a {
+  font-size: 14.5px;
 }
 
 body.page main {

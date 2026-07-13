@@ -15,6 +15,7 @@
 
     body.garden header {
       display: flex;
+      flex-direction: row;
       align-items: baseline;
       gap: 18px;
       flex-wrap: wrap;
@@ -44,6 +45,8 @@
       outline: none;
     }
     .garden-controls input[type="search"]:focus { border-color: var(--accent); }
+
+    #chips { display: inline-flex; flex-wrap: wrap; gap: 8px; }
 
     .chip {
       font-family: inherit;
@@ -211,7 +214,7 @@
 </head>
 <body class="garden page">
   <header>
-    <a href="index.html">Lindsey Noelle LePlae</a>
+    <a class="site-name" href="index.html">Lindsey Noelle LePlae</a>
     <span class="garden-title">digital garden</span>
     <span class="garden-stats" id="stats"></span>
   </header>
@@ -501,13 +504,30 @@
       draw();
     }
 
+    let viewAnim = null;
+    function animateTo(targetK, wx, wy, xOffset = 0) {
+      const mx = canvas.clientWidth / 2 - xOffset, my = canvas.clientHeight / 2;
+      const startK = view.k, startX = view.x, startY = view.y;
+      const endX = mx - targetK * wx, endY = my - targetK * wy;
+      const t0 = performance.now(), dur = 380;
+      if (viewAnim) cancelAnimationFrame(viewAnim);
+      function step(t) {
+        const p = Math.min(1, (t - t0) / dur);
+        const e = 1 - Math.pow(1 - p, 3);
+        view.k = startK + (targetK - startK) * e;
+        view.x = startX + (endX - startX) * e;
+        view.y = startY + (endY - startY) * e;
+        draw();
+        if (p < 1) viewAnim = requestAnimationFrame(step);
+      }
+      viewAnim = requestAnimationFrame(step);
+    }
+
     function centerOn(id) {
       const p = simById[id];
       if (!p) return;
-      const w = canvas.clientWidth, h = canvas.clientHeight;
-      view.k = Math.max(view.k, 1.1);
-      view.x = w / 2 - view.k * p.x;
-      view.y = h / 2 - view.k * p.y;
+      const off = (canvas.clientWidth > 720 && panel.classList.contains("open")) ? 185 : 0;
+      animateTo(Math.max(view.k, 1.15), p.x, p.y, off);
     }
 
     function closePanel() {
@@ -573,32 +593,16 @@
       if (!moved) {
         const rect = canvas.getBoundingClientRect();
         const id = nodeAt(e.clientX - rect.left, e.clientY - rect.top);
-        if (id) openPanel(id); else closePanel();
+        if (id) { openPanel(id); centerOn(id); } else closePanel();
       }
     });
-    let zoomAnim = null;
-    function animateZoomTo(targetK) {
-      const startK = view.k;
-      const mx = canvas.clientWidth / 2, my = canvas.clientHeight / 2;
-      const wx = (mx - view.x) / view.k, wy = (my - view.y) / view.k;
-      const t0 = performance.now();
-      const dur = 280;
-      if (zoomAnim) cancelAnimationFrame(zoomAnim);
-      function step(t) {
-        const p = Math.min(1, (t - t0) / dur);
-        const e = 1 - Math.pow(1 - p, 3);
-        view.k = startK + (targetK - startK) * e;
-        view.x = mx - wx * view.k;
-        view.y = my - wy * view.k;
-        draw();
-        if (p < 1) zoomAnim = requestAnimationFrame(step);
-      }
-      zoomAnim = requestAnimationFrame(step);
+    function zoomButtons(factor) {
+      const wx = (canvas.clientWidth / 2 - view.x) / view.k;
+      const wy = (canvas.clientHeight / 2 - view.y) / view.k;
+      animateTo(Math.min(6, Math.max(0.25, view.k * factor)), wx, wy);
     }
-    document.getElementById("zoom-in").addEventListener("click", () =>
-      animateZoomTo(Math.min(6, view.k * 1.5)));
-    document.getElementById("zoom-out").addEventListener("click", () =>
-      animateZoomTo(Math.max(0.25, view.k / 1.5)));
+    document.getElementById("zoom-in").addEventListener("click", () => zoomButtons(1.5));
+    document.getElementById("zoom-out").addEventListener("click", () => zoomButtons(1 / 1.5));
 
     canvas.addEventListener("wheel", e => {
       e.preventDefault();

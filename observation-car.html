@@ -8,7 +8,17 @@
 </head>
 <body class="page">
   <header>
-    <a href="index.html">Lindsey Noelle LePlae</a>
+    <a class="site-name" href="index.html">Lindsey Noelle LePlae</a>
+    <nav class="menu page-menu">
+      <button type="button" id="projects-toggle" aria-expanded="false">Projects</button>
+      <div class="dropdown" id="projects-dropdown">
+        <a href="critic-list.html">The Critic List</a>
+        <a href="observation-car.html">Observation Car</a>
+        <a href="prison-visitor-guide.html">Prison Visitor Guide</a>
+        <a href="smallgood.html">Smallgood</a>
+      </div>
+      <a href="digital-garden.html">Digital Garden</a>
+    </nav>
   </header>
 
   <main>
@@ -29,5 +39,13 @@
       <p class="status">coming soon — not out in the world yet.</p>
     </div>
   </main>
+  <script>
+    const toggle = document.getElementById("projects-toggle");
+    const dropdown = document.getElementById("projects-dropdown");
+    toggle.addEventListener("click", () => {
+      const open = dropdown.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  </script>
 </body>
 </html>
