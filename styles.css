@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap');
+
 /* palette — after "Thinking for a Living": blush paper, plum ink, burnt-orange accent */
 :root {
   --paper: #fdf4f8;
@@ -5,6 +7,7 @@
   --ink-soft: #6c5a7c;
   --accent: #1fa33d;
   --rose: #4258a8;
+  --name: #e5251d;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,8 +41,11 @@ body.home {
 }
 
 .name {
-  font-size: 17px;
-  font-weight: normal;
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(2.8rem, 7vw, 4rem);
+  font-weight: 700;
+  color: var(--name);
+  line-height: 1;
 }
 
 nav.menu {
@@ -98,12 +104,14 @@ body.page {
 body.page header { padding: 28px 36px; }
 
 body.page header a {
-  color: var(--ink);
-  font-size: 17px;
+  font-family: 'Dancing Script', cursive;
+  color: var(--name);
+  font-size: 24px;
+  font-weight: 700;
 }
 
 body.page header a:hover {
-  color: var(--accent);
+  color: var(--name);
   text-decoration: underline;
   text-underline-offset: 4px;
 }
